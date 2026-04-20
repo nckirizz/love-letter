@@ -1,0 +1,233 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+#scene {
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 2rem 1rem;
+  font-family: sans-serif;
+}
+
+.petals-bg { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.petal-fall {
+  position: absolute; top: -40px; opacity: 0;
+  animation: fallPetal linear infinite;
+}
+@keyframes fallPetal {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+  100% { transform: translateY(600px) rotate(360deg); opacity: 0; }
+}
+
+.flower-row { display: flex; gap: 20px; align-items: flex-end; z-index: 1; margin-bottom: 28px; }
+.flower {
+  display: flex; flex-direction: column; align-items: center;
+  opacity: 0; transform: translateY(30px) scale(0.6);
+  transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.flower.bloom { opacity: 1; transform: translateY(0) scale(1); }
+.petals { position: relative; width: 56px; height: 56px; }
+.petal {
+  position: absolute; width: 20px; height: 28px;
+  border-radius: 50% 50% 0 50%;
+  transform-origin: bottom center;
+  top: 50%; left: 50%; margin-left: -10px; margin-top: -28px;
+}
+.center-dot {
+  position: absolute; width: 13px; height: 13px;
+  border-radius: 50%; background: #FFD700;
+  top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 2;
+}
+.stem { width: 3px; height: 55px; background: #4caf50; border-radius: 4px; }
+.leaf { width: 16px; height: 10px; background: #4caf50; border-radius: 50% 0 50% 0; position: relative; left: 3px; margin-top: -16px; }
+
+.f1 .petal { background: #ff6b9d; }
+.f2 .petal { background: #ff9a3c; }
+.f3 .petal { background: #a855f7; }
+.f4 .petal { background: #ef4444; }
+.f5 .petal { background: #f472b6; }
+
+.message-box { z-index: 1; text-align: center; color: var(--color-text-primary); opacity: 0; transition: opacity 0.8s ease; }
+.message-box.show { opacity: 1; }
+.message-box h2 { font-size: 20px; font-weight: 500; margin-bottom: 6px; }
+.message-box p { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 18px; }
+
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55); z-index: 100;
+  align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.overlay.active { display: flex; }
+
+.popup {
+  background: var(--color-background-primary);
+  border-radius: 20px; padding: 1.8rem 1.6rem 1.4rem;
+  max-width: 340px; width: 100%; text-align: center;
+  animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
+}
+@keyframes popIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.popup-emoji { font-size: 36px; margin-bottom: 10px; display: block; }
+.popup h3 { font-size: 18px; font-weight: 500; margin-bottom: 10px; color: var(--color-text-primary); }
+.popup p {
+  font-size: 13px; color: var(--color-text-secondary);
+  margin-bottom: 18px; line-height: 1.7; text-align: left;
+}
+.popup p.center { text-align: center; }
+
+.btn-pink {
+  background: #e91e8c; color: white; border: none;
+  padding: 11px 28px; border-radius: 50px; font-size: 14px;
+  cursor: pointer; transition: transform 0.15s;
+  display: inline-block; margin: 4px;
+}
+.btn-pink:hover { transform: scale(1.05); }
+
+.btn-outline {
+  background: transparent; color: var(--color-text-secondary);
+  border: 1.5px solid var(--color-border-tertiary);
+  padding: 11px 20px; border-radius: 50px; font-size: 14px;
+  cursor: pointer; position: relative; display: inline-block; margin: 4px;
+  transition: transform 0.2s;
+}
+
+.btn-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+</style>
+
+<div id="scene">
+  <div class="petals-bg" id="petalsBg"></div>
+  <div class="flower-row">
+    <div class="flower f1" id="fl1"><div class="petals" id="p1"></div><div class="leaf"></div><div class="stem"></div></div>
+    <div class="flower f2" id="fl2"><div class="petals" id="p2"></div><div class="leaf"></div><div class="stem" style="height:75px"></div></div>
+    <div class="flower f3" id="fl3"><div class="petals" id="p3"></div><div class="leaf"></div><div class="stem"></div></div>
+    <div class="flower f4" id="fl4"><div class="petals" id="p4"></div><div class="leaf"></div><div class="stem" style="height:68px"></div></div>
+    <div class="flower f5" id="fl5"><div class="petals" id="p5"></div><div class="leaf"></div><div class="stem"></div></div>
+  </div>
+  <div class="message-box" id="msgBox">
+    <h2>For you, Marielle 🌸</h2>
+    <p>I have something for you...</p>
+  </div>
+</div>
+
+<!-- POPUP 1 -->
+<div class="overlay active" id="pop1">
+  <div class="popup">
+    <span class="popup-emoji">💕</span>
+    <h3>Do you love me?</h3>
+    <div class="btn-row">
+      <button class="btn-pink" onclick="go(1)">Of course, baby</button>
+      <button class="btn-outline" id="noBtn1" onmouseover="runAway('noBtn1')" onclick="go(1)">Hmm...</button>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP 2 -->
+<div class="overlay" id="pop2">
+  <div class="popup">
+    <span class="popup-emoji">🌹</span>
+    <h3>Happy Anniversary, baby.</h3>
+    <p>Thank you for being with me since day one. Thank you for never losing your feelings for me, even during the disappointing and difficult times. I appreciate everything you did for me. I wish we continue to grow stronger.<br><br>
+    Sana di na tayo mag-away palagi and we learn to understand each other more. Sorry sa times na nasaktan kita or na-disappoint kita. I promise to do better, just don't do anything na alam mong mawawalan ako ng gana.<br><br>
+    No matter what comes in our way, I want you to know that I'm here. I love you more with each passing day, and I'll continue to hold on to what we have and make it even stronger.<br><br>
+    I love you so much, my love.</p>
+    <div class="btn-row">
+      <button class="btn-pink" onclick="go(2)">I love you more</button>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP 3 -->
+<div class="overlay" id="pop3">
+  <div class="popup">
+    <span class="popup-emoji">🥺</span>
+    <h3>Would you like to go on a date?</h3>
+    <div class="btn-row">
+      <button class="btn-pink" onclick="go(3)">Yes!</button>
+      <button class="btn-outline" id="noBtn3" onmouseover="runAway('noBtn3')" onclick="go(3)">Maybe...</button>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP 4 -->
+<div class="overlay" id="pop4">
+  <div class="popup">
+    <span class="popup-emoji">😂💸</span>
+    <h3>Yun oh!</h3>
+    <p class="center">Utang muna siren ako sayo pang date natin, bayaran ko bukas HAHAHA</p>
+    <div class="btn-row">
+      <button class="btn-pink" onclick="document.getElementById('pop4').classList.remove('active')">Sigi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function buildFlower(id, n) {
+    const el = document.getElementById(id);
+    for (let i = 0; i < n; i++) {
+      const p = document.createElement('div');
+      p.className = 'petal';
+      p.style.transform = `rotate(${i*(360/n)}deg)`;
+      el.appendChild(p);
+    }
+    const c = document.createElement('div');
+    c.className = 'center-dot';
+    el.appendChild(c);
+  }
+  ['p1','p2','p3','p4','p5'].forEach(id => buildFlower(id, 6));
+
+  function spawnPetals() {
+    const bg = document.getElementById('petalsBg');
+    const emojis = ['🌸','🌺','🌹','💐','🌷'];
+    for (let i = 0; i < 16; i++) {
+      const d = document.createElement('div');
+      d.className = 'petal-fall';
+      d.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      d.style.left = Math.random()*95+'%';
+      d.style.animationDuration = (4+Math.random()*5)+'s';
+      d.style.animationDelay = (Math.random()*6)+'s';
+      d.style.fontSize = (13+Math.random()*11)+'px';
+      bg.appendChild(d);
+    }
+  }
+  spawnPetals();
+
+  ['fl1','fl2','fl3','fl4','fl5'].forEach((id,i) => {
+    setTimeout(() => document.getElementById(id).classList.add('bloom'), 300+i*200);
+  });
+  setTimeout(() => document.getElementById('msgBox').classList.add('show'), 1600);
+
+  function go(step) {
+    if (step === 1) {
+      document.getElementById('pop1').classList.remove('active');
+      document.getElementById('pop2').classList.add('active');
+    } else if (step === 2) {
+      document.getElementById('pop2').classList.remove('active');
+      document.getElementById('pop3').classList.add('active');
+    } else if (step === 3) {
+      document.getElementById('pop3').classList.remove('active');
+      document.getElementById('pop4').classList.add('active');
+    }
+  }
+
+  function runAway(btnId) {
+    const btn = document.getElementById(btnId);
+    const popup = btn.closest('.popup');
+    const pr = popup.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    const maxX = pr.width - br.width - 20;
+    const maxY = pr.height - br.height - 20;
+    const rx = Math.floor(Math.random()*maxX) - (br.left - pr.left - 10);
+    const ry = Math.floor(Math.random()*maxY) - (br.top - pr.top - 10);
+    btn.style.transform = `translate(${rx}px, ${ry}px)`;
+  }
+</script>
